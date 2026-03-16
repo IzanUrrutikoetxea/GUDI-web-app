@@ -1,14 +1,10 @@
 import { Router } from "express";
 import userRoutes from "./userRoutes";
+import authRoutes from "./authRoutes";
 
 const router = Router();
 
-router.get("/health", (_req, res) => {
-  res.status(200).json({
-    message: "GUDI API is running correctly"
-  });
-});
-
 router.use("/users", userRoutes);
+router.use("/auth", authRoutes);
 
 export default router;
