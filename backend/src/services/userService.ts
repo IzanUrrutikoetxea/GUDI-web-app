@@ -7,12 +7,3 @@ export const getAllUsers = async () => {
     }
   });
 };
-
-export const createUser = async (name: string, email: string) => {
-  return prisma.user.create({
-    data: {
-      name,
-      email
-    }
-  });
-};
