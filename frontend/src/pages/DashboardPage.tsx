@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatCard from '../components/StatCard'
-import { apiGet } from '../utils/api'
-import '../styles/dashboard.css'
+import { apiGet } from '../services/api'
+import './DashboardPage.css'
 
 type DashboardStats = {
     summary: {

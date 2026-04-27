@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import '../styles/login.css'
+import './LoginPage.css'
+import { apiPost } from '../services/api'
 
 function LoginPage() {
     const [email, setEmail] = useState('')
@@ -9,19 +10,24 @@ function LoginPage() {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError('')
         setLoading(true)
 
-        if (email && password) {
-            localStorage.setItem('token', 'demo-token')
-            navigate('/dashboard')
-        } else {
-            setError('Introduce email y contraseña')
-        }
+        try {
+            const data = await apiPost<{ token: string }>('/auth/login', {
+                email,
+                password,
+            })
 
-        setLoading(false)
+            localStorage.setItem('token', data.token)
+            navigate('/dashboard')
+        } catch {
+            setError('Email o contraseña incorrectos')
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (

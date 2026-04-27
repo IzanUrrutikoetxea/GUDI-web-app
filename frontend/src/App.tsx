@@ -2,13 +2,20 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import RegisterPage from "./pages/RegisterPage"
+import RegisterPage from './pages/RegisterPage'
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
+
+                {/* Login */}
                 <Route path="/login" element={<LoginPage />} />
+
+                {/* Register */}
+                <Route path="/register" element={<RegisterPage />} />
+
+                {/* Dashboard protegido */}
                 <Route
                     path="/dashboard"
                     element={
@@ -17,8 +24,13 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Redirección raíz */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+
+                {/* Wildcard SIEMPRE AL FINAL */}
                 <Route path="*" element={<Navigate to="/login" replace />} />
-                <Route path="/register" element={<RegisterPage />} />
+
             </Routes>
         </BrowserRouter>
     )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import '../styles/login.css'
+import '../styles/LoginPage.css'
+import { apiPost } from '../services/api'
 
 function RegisterPage() {
     const navigate = useNavigate()
@@ -12,33 +13,38 @@ function RegisterPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
         setError('')
         setLoading(true)
 
-        if (!name || !email || !password || !confirmPassword) {
-            setError('Completa todos los campos')
-            setLoading(false)
-            return
-        }
+        try {
+            if (!name || !email || !password || !confirmPassword) {
+                setError('Completa todos los campos')
+                return
+            }
 
-        if (password !== confirmPassword) {
-            setError('Las contraseñas no coinciden')
-            setLoading(false)
-            return
-        }
+            if (password !== confirmPassword) {
+                setError('Las contraseñas no coinciden')
+                return
+            }
 
-        localStorage.setItem('token', 'demo-token')
-        localStorage.setItem(
-            'demo-user',
-            JSON.stringify({
+            const data = await apiPost<{ token: string }>('/auth/register', {
                 name,
                 email,
+                password,
             })
-        )
 
-        navigate('/dashboard')
+            localStorage.setItem('token', data.token)
+
+            navigate('/dashboard')
+
+        } catch {
+            setError('No se pudo crear la cuenta')
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
