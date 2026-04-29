@@ -22,6 +22,19 @@ model User {
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]
   budgets      Budget[]
+  messages     Message[]
+}
+
+enum MessageChannel {
+  EMAIL
+  WHATSAPP
+  INTERNAL
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  ARCHIVED
 }
 
 enum BudgetStatus {
@@ -63,4 +76,18 @@ model BudgetItem {
   unitPrice   Float
   budgetId    Int
   budget      Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id              Int            @id @default(autoincrement())
+  subject         String?
+  body            String
+  channel         MessageChannel
+  status          MessageStatus  @default(UNREAD)
+  senderName      String
+  senderContact   String
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
