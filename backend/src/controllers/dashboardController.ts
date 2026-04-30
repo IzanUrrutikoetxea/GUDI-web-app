@@ -3,7 +3,7 @@ import { getDashboardStats } from "../services/dashboardService";
 
 export const stats = async (req: Request, res: Response) => {
     try {
-        // Logging de acceso (muy importante según la corrección)
+        // Logging de acceso (muy importante segï¿½n la correcciï¿½n)
         console.log({
             event: "dashboard_stats_access",
             userId: req.user?.userId,

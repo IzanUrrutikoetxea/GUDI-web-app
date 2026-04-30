@@ -13,11 +13,81 @@ enum UserRole {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      UserRole @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  role         UserRole      @default(USER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+  budgets      Budget[]
+  messages     Message[]
+}
+
+enum MessageChannel {
+  EMAIL
+  WHATSAPP
+  INTERNAL
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum BudgetStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Budget {
+  id         Int          @id @default(autoincrement())
+  title      String
+  clientName String
+  taxRate    Float        @default(0)
+  status     BudgetStatus @default(DRAFT)
+  userId     Int
+  user       User         @relation(fields: [userId], references: [id])
+  items      BudgetItem[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model BudgetItem {
+  id          Int    @id @default(autoincrement())
+  description String
+  quantity    Float
+  unitPrice   Float
+  budgetId    Int
+  budget      Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id              Int            @id @default(autoincrement())
+  subject         String?
+  body            String
+  channel         MessageChannel
+  status          MessageStatus  @default(UNREAD)
+  senderName      String
+  senderContact   String
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
