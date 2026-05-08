@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package notifications;
+
+service NotificationsService {
+  rpc Send(SendRequest) returns (SendResponse);
+  rpc GetStats(Empty) returns (StatsResponse);
+}
+
+message Empty {}
+
+message SendRequest {
+  string recipient  = 1;
+  string content    = 2;
+  string channel    = 3;
+}
+
+message SendResponse {
+  bool   success   = 1;
+  string id        = 2;
+  string timestamp = 3;
+  string message   = 4;
+}
+
+message StatsResponse {
+  int32 total      = 1;
+  int32 byEmail    = 2;
+  int32 byWhatsapp = 3;
+  int32 byInternal = 4;
+}
