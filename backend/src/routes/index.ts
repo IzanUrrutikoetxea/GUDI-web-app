@@ -4,13 +4,19 @@ import authRoutes from "./authRoutes";
 import dashboardRoutes from "./dashboardRoutes";
 import appointmentRoutes from "./appointmentRoutes";
 import budgetRoutes from "./budgetRoutes";
+import messageRoutes from "./messageRoutes";
 
 const router = Router();
+
+router.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 router.use("/users", userRoutes);
 router.use("/auth", authRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/appointments", appointmentRoutes);
 router.use("/budgets", budgetRoutes);
+router.use("/messages", messageRoutes);
 
 export default router;
