@@ -86,11 +86,11 @@ npm run dev
 | Fase | Descripción | Estado |
 |------|-------------|--------|
 | 1 | Preparación del proyecto y entorno | ✅ Completada |
-| 2 | Autenticación y usuarios | 🔄 En progreso |
-| 3 | Panel de control (Dashboard) | 🔄 En progreso |
-| 4 | Módulo de agenda | 🔄 En progreso |
-| 5 | Presupuestación | 🔄 En progreso |
-| 6 | Bandeja omnicanal y mensajería | 🔄 En progreso |
+| 2 | Autenticación y usuarios | ✅ Completada |
+| 3 | Panel de control (Dashboard) | ✅ Completada |
+| 4 | Módulo de agenda | ✅ Completada |
+| 5 | Presupuestación | ✅ Completada |
+| 6 | Bandeja omnicanal y mensajería | ✅ Completada |
 
 ## Repositorio
 
