@@ -2,11 +2,20 @@ import cors from "cors";
 import express from "express";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
+import { metricsMiddleware } from "./middlewares/metricsMiddleware";
+import { register } from "./config/metrics";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(metricsMiddleware);
+
+// Prometheus scrape endpoint (no auth — only accessible internally)
+app.get("/metrics", async (_req, res) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
 
 app.use("/api", routes);
 
