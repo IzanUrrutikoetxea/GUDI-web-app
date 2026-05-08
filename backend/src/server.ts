@@ -1,3 +1,4 @@
+import "./tracing"; // must be first
 import app from "./app";
 import { env } from "./config/env";
 

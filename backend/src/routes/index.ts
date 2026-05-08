@@ -5,6 +5,7 @@ import dashboardRoutes from "./dashboardRoutes";
 import appointmentRoutes from "./appointmentRoutes";
 import budgetRoutes from "./budgetRoutes";
 import messageRoutes from "./messageRoutes";
+import notificationsRoutes from "./notificationsRoutes";
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/appointments", appointmentRoutes);
 router.use("/budgets", budgetRoutes);
 router.use("/messages", messageRoutes);
+router.use("/notifications", notificationsRoutes);
 
 export default router;
