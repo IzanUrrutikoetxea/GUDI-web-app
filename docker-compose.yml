@@ -1,4 +1,7 @@
 services:
+
+  # ─── App ───────────────────────────────────────────────────────────────────
+
   db:
     image: postgres:16-alpine
     environment:
@@ -24,6 +27,10 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://postgres:password@db:5432/gudi_db?schema=public
       JWT_SECRET: dev_jwt_secret_change_in_production
+      NOTIFICATIONS_SERVICE_URL: notifications-service:50051
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      LOG_LEVEL: info
+      NODE_ENV: development
     ports:
       - "3000:3000"
     volumes:
@@ -41,5 +48,103 @@ services:
     volumes:
       - ./frontend/src:/app/src
 
+  notifications-service:
+    build: ./notifications-service
+    environment:
+      GRPC_PORT: 50051
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./notifications-service/src:/app/src
+
+  # ─── Observability ─────────────────────────────────────────────────────────
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.104.0
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./infra/otel-collector/otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.58
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14317:4317"   # OTLP gRPC (Jaeger internal)
+    volumes:
+      - jaeger_data:/badger
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-jaeger-datasource
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - jaeger
+
+  # ─── ELK Stack ─────────────────────────────────────────────────────────────
+
+  elasticsearch:
+    image: elasticsearch:8.14.0
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      xpack.security.enabled: "false"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    profiles: ["elk"]
+
+  logstash:
+    image: logstash:8.14.0
+    volumes:
+      - ./infra/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5000:5000"
+    depends_on:
+      - elasticsearch
+    profiles: ["elk"]
+
+  kibana:
+    image: kibana:8.14.0
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    profiles: ["elk"]
+
 volumes:
   postgres_data:
+  jaeger_data:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
