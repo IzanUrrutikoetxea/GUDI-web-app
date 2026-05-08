@@ -25,9 +25,9 @@ Checklist ordenado por fases, desde la configuración inicial hasta la entrega d
   - `db` (PostgreSQL)
 - [x] Definir variables de entorno en `docker-compose.yml`
 - [x] Crear `backend/.env.example` con variables de ejemplo (`PORT`, `DATABASE_URL`, `JWT_SECRET`)
-- [ ] Verificar que `docker compose up` levanta todos los servicios correctamente
-- [ ] Verificar que el frontend accede al backend desde el contenedor
-- [ ] Verificar que el backend conecta con PostgreSQL desde el contenedor
+- [x] Verificar que `docker compose up` levanta todos los servicios correctamente
+- [x] Verificar que el frontend accede al backend desde el contenedor
+- [x] Verificar que el backend conecta con PostgreSQL desde el contenedor
 - [x] Documentar en el `README.md` cómo ejecutar el proyecto con Docker
 
 ---
@@ -180,9 +180,9 @@ Checklist ordenado por fases, desde la configuración inicial hasta la entrega d
 ## Cierre y entrega
 
 - [x] Todos los endpoints de la API están protegidos con JWT
-- [ ] Verificar que el proyecto completo arranca con `docker compose up` sin errores
+- [x] Verificar que el proyecto completo arranca con `docker compose up` sin errores
 - [ ] Realizar pruebas de integración (flujo login → dashboard → agenda → presupuestos → mensajería)
-- [ ] Actualizar `README.md` con el estado final del proyecto
+- [x] Actualizar `README.md` con el estado final del proyecto
 - [x] Verificar que `.env` no está subido al repositorio
 - [x] Profesor tiene acceso al repositorio como colaborador
-- [ ] Hacer merge de `develop` a `main` con la versión estable final
+- [x] Hacer merge de `develop` a `main` con la versión estable final
