@@ -1,82 +1,79 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import './LoginPage.css'
-import { apiPost } from '../services/api'
+import { useState, FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { authService } from "../services/authService";
+import "../components/AuthForm.css";
 
-function LoginPage() {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
-    const navigate = useNavigate()
+export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setError('')
-        setLoading(true)
-
-        try {
-            const data = await apiPost<{ token: string }>('/auth/login', {
-                email,
-                password,
-            })
-
-            localStorage.setItem('token', data.token)
-            navigate('/dashboard')
-        } catch {
-            setError('Email o contraseña incorrectos')
-        } finally {
-            setLoading(false)
-        }
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const { token, user } = await authService.login(email, password);
+      login(token, user);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+    } finally {
+      setLoading(false);
     }
+  }
 
-    return (
-        <div className="login-container">
-            <form className="login-form" onSubmit={handleSubmit}>
-                <div className="login-header">
-                    <span className="login-badge">GUDI</span>
-                    <h2>Iniciar sesión</h2>
-                    <p>Accede al panel principal para revisar la actividad del sistema</p>
-                </div>
+  return (
+    <div className="auth">
+      <div className="auth__card">
+        <div className="auth__logo">GUDI</div>
+        <h1 className="auth__title">Iniciar sesión</h1>
 
-                <div className="input-group">
-                    <label htmlFor="email">Correo electrónico</label>
-                    <input
-                        id="email"
-                        type="email"
-                        placeholder="Introduce tu correo electrónico"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        autoComplete="email"
-                    />
-                </div>
+        <form className="auth__form" onSubmit={handleSubmit}>
+          {error && <div className="auth__error">{error}</div>}
 
-                <div className="input-group">
-                    <label htmlFor="password">Contraseña</label>
-                    <input
-                        id="password"
-                        type="password"
-                        placeholder="Introduce tu contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        autoComplete="current-password"
-                    />
-                </div>
+          <div className="auth__field">
+            <label className="auth__label" htmlFor="email">Correo electrónico</label>
+            <input
+              id="email"
+              className="auth__input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="tu@email.com"
+            />
+          </div>
 
-                {error && <p className="login-error">{error}</p>}
+          <div className="auth__field">
+            <label className="auth__label" htmlFor="password">Contraseña</label>
+            <input
+              id="password"
+              className="auth__input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
+          </div>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Entrando...' : 'Entrar'}
-                </button>
+          <button className="auth__submit" type="submit" disabled={loading}>
+            {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+          </button>
+        </form>
 
-                <p className="login-switch">
-                    ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
-                </p>
-            </form>
-        </div>
-    )
+        <p className="auth__footer">
+          ¿No tienes cuenta?{" "}
+          <Link to="/register">Crear cuenta</Link>
+        </p>
+      </div>
+    </div>
+  );
 }
-
-export default LoginPage

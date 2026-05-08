@@ -1,125 +1,98 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import '../styles/LoginPage.css'
-import { apiPost } from '../services/api'
+import { useState, FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { authService } from "../services/authService";
+import "../components/AuthForm.css";
 
-function RegisterPage() {
-    const navigate = useNavigate()
+export default function RegisterPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        setError('')
-        setLoading(true)
-
-        try {
-            if (!name || !email || !password || !confirmPassword) {
-                setError('Completa todos los campos')
-                return
-            }
-
-            if (password !== confirmPassword) {
-                setError('Las contraseñas no coinciden')
-                return
-            }
-
-            const data = await apiPost<{ token: string }>('/auth/register', {
-                name,
-                email,
-                password,
-            })
-
-            localStorage.setItem('token', data.token)
-
-            navigate('/dashboard')
-
-        } catch {
-            setError('No se pudo crear la cuenta')
-        } finally {
-            setLoading(false)
-        }
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      return;
     }
+    setLoading(true);
+    try {
+      const { token, user } = await authService.register(name, email, password);
+      login(token, user);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al crear la cuenta");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    return (
-        <div className="login-container">
-            <form className="login-form register-form" onSubmit={handleSubmit}>
-                <div className="login-header">
-                    <span className="login-badge">GUDI</span>
-                    <h2>Crear cuenta</h2>
-                    <p>Regístrate para acceder al panel principal del sistema</p>
-                </div>
+  return (
+    <div className="auth">
+      <div className="auth__card">
+        <div className="auth__logo">GUDI</div>
+        <h1 className="auth__title">Crear cuenta</h1>
 
-                <div className="input-group">
-                    <label htmlFor="name">Nombre completo</label>
-                    <input
-                        id="name"
-                        type="text"
-                        placeholder="Introduce tu nombre"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        autoComplete="name"
-                    />
-                </div>
+        <form className="auth__form" onSubmit={handleSubmit}>
+          {error && <div className="auth__error">{error}</div>}
 
-                <div className="input-group">
-                    <label htmlFor="email">Correo electrónico</label>
-                    <input
-                        id="email"
-                        type="email"
-                        placeholder="Introduce tu correo electrónico"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        autoComplete="email"
-                    />
-                </div>
+          <div className="auth__field">
+            <label className="auth__label" htmlFor="name">Nombre</label>
+            <input
+              id="name"
+              className="auth__input"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoComplete="name"
+              placeholder="Tu nombre"
+            />
+          </div>
 
-                <div className="input-group">
-                    <label htmlFor="password">Contraseña</label>
-                    <input
-                        id="password"
-                        type="password"
-                        placeholder="Crea una contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        autoComplete="new-password"
-                    />
-                </div>
+          <div className="auth__field">
+            <label className="auth__label" htmlFor="email">Correo electrónico</label>
+            <input
+              id="email"
+              className="auth__input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="tu@email.com"
+            />
+          </div>
 
-                <div className="input-group">
-                    <label htmlFor="confirmPassword">Confirmar contraseña</label>
-                    <input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="Repite la contraseña"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        autoComplete="new-password"
-                    />
-                </div>
+          <div className="auth__field">
+            <label className="auth__label" htmlFor="password">Contraseña</label>
+            <input
+              id="password"
+              className="auth__input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              placeholder="Mínimo 6 caracteres"
+            />
+          </div>
 
-                {error && <p className="login-error">{error}</p>}
+          <button className="auth__submit" type="submit" disabled={loading}>
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
+          </button>
+        </form>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Creando cuenta...' : 'Registrarse'}
-                </button>
-
-                <p className="login-switch">
-                    ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-                </p>
-            </form>
-        </div>
-    )
+        <p className="auth__footer">
+          ¿Ya tienes cuenta?{" "}
+          <Link to="/login">Iniciar sesión</Link>
+        </p>
+      </div>
+    </div>
+  );
 }
-
-export default RegisterPage

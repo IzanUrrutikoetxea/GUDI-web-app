@@ -8,6 +8,10 @@ import messageRoutes from "./messageRoutes";
 
 const router = Router();
 
+router.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 router.use("/users", userRoutes);
 router.use("/auth", authRoutes);
 router.use("/dashboard", dashboardRoutes);

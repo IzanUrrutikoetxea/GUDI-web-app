@@ -1,64 +1,44 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const BASE_URL = "/api";
 
-const defaultHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
+function getToken(): string | null {
+  return localStorage.getItem("token");
 }
 
-const parseResponse = async (response: Response) => {
-    const contentType = response.headers.get('content-type')
+async function request<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const token = getToken();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string>),
+  };
 
-    if (!contentType?.includes('application/json')) {
-        return null
-    }
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
 
-    return response.json()
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: "Request failed" }));
+    throw new Error(error.message || "Request failed");
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json();
 }
 
-const getAuthHeaders = (): HeadersInit => {
-    const token = localStorage.getItem('token')
-
-    if (!token) {
-        return defaultHeaders
-    }
-
-    return {
-        ...defaultHeaders,
-        Authorization: `Bearer ${token}`,
-    }
-}
-
-export const apiGet = async <T,>(url: string): Promise<T> => {
-    const response = await fetch(`${API_URL}${url}`, {
-        headers: getAuthHeaders(),
-    })
-
-    const data = await parseResponse(response)
-
-    if (response.status === 401) {
-        localStorage.removeItem('token')
-        window.location.href = '/login'
-        throw new Error('Unauthorized')
-    }
-
-    if (!response.ok) {
-        throw new Error(data?.message || 'Request failed')
-    }
-
-    return data as T
-}
-
-export const apiPost = async <T,>(url: string, body: unknown): Promise<T> => {
-    const response = await fetch(`${API_URL}${url}`, {
-        method: 'POST',
-        headers: defaultHeaders,
-        body: JSON.stringify(body),
-    })
-
-    const data = await parseResponse(response)
-
-    if (!response.ok) {
-        throw new Error(data?.message || 'Request failed')
-    }
-
-    return data as T
-}
+export const api = {
+  get: <T>(path: string) => request<T>(path),
+  post: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+  put: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
+  patch: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+};

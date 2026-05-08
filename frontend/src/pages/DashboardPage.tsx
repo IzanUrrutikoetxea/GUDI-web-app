@@ -1,222 +1,112 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import StatCard from '../components/StatCard'
-import { apiGet } from '../services/api'
-import './DashboardPage.css'
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
+import { User } from "../types";
+import "./DashboardPage.css";
 
-type DashboardStats = {
-    summary: {
-        totalUsers: number
-        totalAdmins: number
-        regularUsers: number
-        usersCreatedLast7Days: number
-    }
-    activity: Array<{
-        id: number
-        name: string
-        email: string
-        role: string
-        createdAt: string
-    }>
-    system: {
-        generatedAt: string
-        status: string
-    }
+interface DashboardData {
+  users: {
+    total: number;
+    admins: number;
+    regular: number;
+    newThisMonth: number;
+  };
+  recentActivity: User[];
 }
 
-type CurrentUser = {
-    id: number
-    name: string
-    email: string
-    role: string
-    createdAt: string
+interface StatCardProps {
+  label: string;
+  value: number;
+  icon: string;
+  color: string;
 }
 
-function DashboardPage() {
-    const [stats, setStats] = useState<DashboardStats | null>(null)
-    const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const navigate = useNavigate()
+function StatCard({ label, value, icon, color }: StatCardProps) {
+  return (
+    <div className="stat-card" style={{ "--card-color": color } as React.CSSProperties}>
+      <div className="stat-card__icon">{icon}</div>
+      <div className="stat-card__value">{value}</div>
+      <div className="stat-card__label">{label}</div>
+    </div>
+  );
+}
 
-    useEffect(() => {
-        const loadDashboard = async () => {
-            try {
-                setLoading(true)
-                setError('')
+export default function DashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-                const [statsResponse, meResponse] = await Promise.all([
-                    apiGet<DashboardStats>('/api/dashboard/stats'),
-                    apiGet<CurrentUser>('/api/auth/me'),
-                ])
+  useEffect(() => {
+    api
+      .get<DashboardData>("/dashboard/stats")
+      .then(setData)
+      .catch(() => setError("No se pudieron cargar las estadísticas"))
+      .finally(() => setLoading(false));
+  }, []);
 
-                setStats(statsResponse)
-                setCurrentUser(meResponse)
-            } catch (err) {
-                const message =
-                    err instanceof Error ? err.message : 'No se pudo cargar el dashboard'
+  if (loading) return <div className="dashboard__loading">Cargando...</div>;
+  if (error) return <div className="dashboard__error">{error}</div>;
+  if (!data) return null;
 
-                setError(message)
+  return (
+    <div className="dashboard">
+      <div className="page-header">
+        <h1 className="page-header__title">Panel de control</h1>
+        <p className="page-header__subtitle">Resumen general del sistema</p>
+      </div>
 
-                if (message.toLowerCase().includes('token')) {
-                    localStorage.removeItem('token')
-                    navigate('/login', { replace: true })
-                }
-            } finally {
-                setLoading(false)
-            }
-        }
+      <div className="dashboard__stats">
+        <StatCard
+          label="Usuarios totales"
+          value={data.users.total}
+          icon="👥"
+          color="#2563eb"
+        />
+        <StatCard
+          label="Administradores"
+          value={data.users.admins}
+          icon="🛡️"
+          color="#7c3aed"
+        />
+        <StatCard
+          label="Usuarios regulares"
+          value={data.users.regular}
+          icon="👤"
+          color="#0891b2"
+        />
+        <StatCard
+          label="Nuevos este mes"
+          value={data.users.newThisMonth}
+          icon="✨"
+          color="#16a34a"
+        />
+      </div>
 
-        void loadDashboard()
-    }, [navigate])
-
-    const statCards = useMemo(() => {
-        if (!stats) return []
-
-        return [
-            {
-                title: 'Usuarios totales',
-                value: stats.summary.totalUsers,
-                description: 'Usuarios registrados actualmente en el sistema.',
-                icon: '👥',
-            },
-            {
-                title: 'Administradores',
-                value: stats.summary.totalAdmins,
-                description: 'Cuentas con permisos de administración.',
-                icon: '🛡️',
-            },
-            {
-                title: 'Usuarios estándar',
-                value: stats.summary.regularUsers,
-                description: 'Usuarios sin privilegios avanzados.',
-                icon: '🙋',
-            },
-            {
-                title: 'Altas últimos 7 días',
-                value: stats.summary.usersCreatedLast7Days,
-                description: 'Nuevos registros recientes en la plataforma.',
-                icon: '📈',
-            },
-        ]
-    }, [stats])
-
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        navigate('/login', { replace: true })
-    }
-
-    if (loading) {
-        return (
-            <main className="dashboard-state">
-                <div className="dashboard-state__card">
-                    <p>Cargando dashboard...</p>
+      <div className="dashboard__section">
+        <h2 className="dashboard__section-title">Actividad reciente</h2>
+        {data.recentActivity.length === 0 ? (
+          <p className="dashboard__empty">No hay actividad reciente</p>
+        ) : (
+          <div className="activity-list">
+            {data.recentActivity.map((user) => (
+              <div key={user.id} className="activity-item">
+                <div className="activity-item__avatar">
+                  {user.name.charAt(0).toUpperCase()}
                 </div>
-            </main>
-        )
-    }
-
-    if (error) {
-        return (
-            <main className="dashboard-state">
-                <div className="dashboard-state__card">
-                    <h2>No se pudo cargar el panel</h2>
-                    <p>{error}</p>
-                    <button onClick={() => window.location.reload()}>Reintentar</button>
-                </div>
-            </main>
-        )
-    }
-
-    return (
-        <main className="dashboard-page">
-            <section className="dashboard-hero">
                 <div>
-                    <span className="dashboard-hero__eyebrow">Panel de control GUDI</span>
-                    <h1>Resumen general del sistema</h1>
-                    <p>
-                        Consulta estadísticas básicas, actividad reciente y estado general
-                        de la aplicación desde una única pantalla.
-                    </p>
+                  <div className="activity-item__name">{user.name}</div>
+                  <div className="activity-item__meta">{user.email}</div>
                 </div>
-
-                <div className="dashboard-hero__actions">
-                    <div className="dashboard-user-card">
-                        <span className="dashboard-user-card__label">Sesión activa</span>
-                        <strong>{currentUser?.name}</strong>
-                        <span>
-                            {currentUser?.role} · {currentUser?.email}
-                        </span>
-                    </div>
-                    <button className="secondary-button" onClick={handleLogout}>
-                        Cerrar sesión
-                    </button>
+                <span className={`activity-item__badge activity-item__badge--${user.role.toLowerCase()}`}>
+                  {user.role}
+                </span>
+                <div className="activity-item__date">
+                  {new Date(user.createdAt).toLocaleDateString("es-ES")}
                 </div>
-            </section>
-
-            <section className="stats-grid">
-                {statCards.map((card) => (
-                    <StatCard key={card.title} {...card} />
-                ))}
-            </section>
-
-            <section className="dashboard-content">
-                <article className="dashboard-panel">
-                    <div className="dashboard-panel__header">
-                        <h2>Actividad reciente</h2>
-                        <p>Últimos usuarios registrados en la plataforma.</p>
-                    </div>
-
-                    <div className="activity-list">
-                        {stats?.activity.map((item) => (
-                            <div className="activity-item" key={item.id}>
-                                <div>
-                                    <strong>{item.name}</strong>
-                                    <p>{item.email}</p>
-                                </div>
-                                <div className="activity-item__meta">
-                                    <span>{item.role}</span>
-                                    <span>
-                                        {new Date(item.createdAt).toLocaleDateString('es-ES', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                        })}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </article>
-
-                <article className="dashboard-panel dashboard-panel--compact">
-                    <div className="dashboard-panel__header">
-                        <h2>Estado del sistema</h2>
-                        <p>Información básica del backend para esta vista.</p>
-                    </div>
-
-                    <div className="system-status">
-                        <div className="system-status__item">
-                            <span className="system-status__label">Estado</span>
-                            <strong>{stats?.system.status}</strong>
-                        </div>
-                        <div className="system-status__item">
-                            <span className="system-status__label">Última actualización</span>
-                            <strong>
-                                {stats?.system.generatedAt
-                                    ? new Date(stats.system.generatedAt).toLocaleString('es-ES')
-                                    : '-'}
-                            </strong>
-                        </div>
-                        <div className="system-status__item">
-                            <span className="system-status__label">Módulo activo</span>
-                            <strong>Dashboard fase 3</strong>
-                        </div>
-                    </div>
-                </article>
-            </section>
-        </main>
-    )
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
-
-export default DashboardPage

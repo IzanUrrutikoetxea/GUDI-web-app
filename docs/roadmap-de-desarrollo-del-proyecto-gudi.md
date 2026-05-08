@@ -187,31 +187,6 @@ Centralización de comunicaciones.
 
 ---
 
-# FASE FINAL — Integración IA (n8n + OpenAI)
-
-Duración estimada: **1 semana**
-Fecha esperada: 26 de abril
-Funcionalidades inteligentes.
-
-### Ejemplos
-- Generación automática de respuestas
-- Automatización de mensajes
-- Recordatorios automáticos
-
-### Responsable
-
-**Izan**
-- Configuración n8n
-- Integración OpenAI
-
-**Gorka**
-- Botón de generación automática
-    
-**Mario**
-- Documentación del funcionamiento
-    
-
----
 
 # Resumen de reparto de trabajo
 

@@ -1,39 +1,90 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import DashboardPage from './pages/DashboardPage'
-import LoginPage from './pages/LoginPage'
-import ProtectedRoute from './components/ProtectedRoute'
-import RegisterPage from './pages/RegisterPage'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import { useAuth } from "./hooks/useAuth";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import AgendaPage from "./pages/AgendaPage";
+import BudgetsPage from "./pages/BudgetsPage";
+import MessagesPage from "./pages/MessagesPage";
+import MainLayout from "./layouts/MainLayout";
 
-function App() {
-    return (
-        <BrowserRouter>
-            <Routes>
-
-                {/* Login */}
-                <Route path="/login" element={<LoginPage />} />
-
-                {/* Register */}
-                <Route path="/register" element={<RegisterPage />} />
-
-                {/* Dashboard protegido */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <DashboardPage />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Redirección raíz */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-
-                {/* Wildcard SIEMPRE AL FINAL */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-
-            </Routes>
-        </BrowserRouter>
-    )
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-export default App
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <DashboardPage />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agenda"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <AgendaPage />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/presupuestos"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <BudgetsPage />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/mensajeria"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <MessagesPage />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
