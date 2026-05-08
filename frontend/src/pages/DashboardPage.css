@@ -1,0 +1,124 @@
+.dashboard__loading,
+.dashboard__error,
+.dashboard__empty {
+  color: var(--color-text-muted);
+  padding: 24px 0;
+}
+
+.dashboard__error {
+  color: var(--color-danger);
+}
+
+.dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--card-color, var(--color-primary));
+}
+
+.stat-card__icon {
+  font-size: 1.75rem;
+  margin-bottom: 12px;
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--card-color, var(--color-primary));
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-card__label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.dashboard__section {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.dashboard__section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--color-text);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item__avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.activity-item__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.activity-item__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.activity-item__badge {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.activity-item__badge--admin {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.activity-item__badge--user {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.activity-item__date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
